@@ -1,5 +1,7 @@
 # ProteinTranscription
 
+# this is btw made with AI. i needed a quick and easy way to automate my homework
+
 A small TypeScript CLI that **transcribes DNA → RNA → amino acid (protein) chain**.
 
 ## Usage
