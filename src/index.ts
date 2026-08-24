@@ -29,10 +29,12 @@ function highlightCodons(sequence: string): string {
  *
  *     DNA:   D A T A G G A C C A T A C C
  *     RNA:   U A C . . . . . . . . . . .
- *     CHAIN: START thy---his---his---his [END]
+ *     CHAIN: START [tyr]met---his---his---his [END]
  *
  * The DNA and RNA rows are printed with alternating highlights grouped in
  * codons (triplets) so the base pairs are easy to spot three at a time.
+ * Codons appearing before the AUG start codon are shown in square brackets
+ * (e.g. [tyr]) in the CHAIN output.
  */
 function renderReport(dnaInput: string): string {
 	const dna = normalizeSequence(dnaInput);
@@ -47,7 +49,8 @@ function renderReport(dnaInput: string): string {
 	if (translation.startIndex === -1) {
 		lines.push("CHAIN: no start codon (AUG) found");
 	} else {
-		const chain = translation.aminoAcids.join("---");
+		const preStart = translation.preStartAminoAcids.map((aa) => `[${aa}] `).join("");
+		const chain = preStart + translation.aminoAcids.join("---");
 		lines.push(translation.terminated ? `CHAIN: ${chain}   [END]` : `CHAIN: START ${chain}`);
 	}
 
@@ -60,9 +63,9 @@ function main(): void {
 
 	if (dnaInput.length === 0) {
 		console.error(
-			"Usage: npm run start -- <DNA sequence>\n" +
-				"  e.g. npm run start -- ATGGCCATTGTAATGGGCCGCTGAAAGGGTGCCCGATAG\n" +
-				"  or   npm run start -- A T G G C C A T T G T A",
+			"Usage: ProteinTranscription.exe <DNA sequence>\n" +
+				"  e.g. ProteinTranscription.exe ATGGCCATTGTAATGGGCCGCTGAAAGGGTGCCCGATAG\n" +
+				"  or   ProteinTranscription.exe A T G G C C A T T G T A",
 		);
 		process.exit(1);
 	}

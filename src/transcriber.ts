@@ -37,6 +37,8 @@ export function transcribe(dna: string): TranscribedNucleotide[] {
 export interface TranslationResult {
 	/** 0-based index in the RNA where translation began (the AUG start). */
 	startIndex: number;
+	/** Amino acids encoded by codons that appear before the start codon. */
+	preStartAminoAcids: string[];
 	/** The amino acids found between the start codon and the first stop codon. */
 	aminoAcids: string[];
 	/** True when a stop codon terminated the chain. */
@@ -52,7 +54,17 @@ export function translate(rna: string): TranslationResult {
 	const startIndex = rna.indexOf(START_CODON);
 
 	if (startIndex === -1) {
-		return { startIndex: -1, aminoAcids: [], terminated: false };
+		return { startIndex: -1, preStartAminoAcids: [], aminoAcids: [], terminated: false };
+	}
+
+	const preStartAminoAcids: string[] = [];
+	for (let i = 0; i + 3 <= startIndex; i += 3) {
+		const codon = rna.slice(i, i + 3);
+		const aminoAcid = CODON_TO_AMINO_ACID[codon];
+		// Unknown / unhandled codons are skipped so the output stays robust.
+		if (aminoAcid !== undefined && !STOP_CODONS.has(codon)) {
+			preStartAminoAcids.push(aminoAcid);
+		}
 	}
 
 	const aminoAcids: string[] = [];
@@ -73,7 +85,7 @@ export function translate(rna: string): TranslationResult {
 		}
 	}
 
-	return { startIndex, aminoAcids, terminated };
+	return { startIndex, preStartAminoAcids, aminoAcids, terminated };
 }
 
 /** Sanity check that reports which positions are not valid DNA bases. */
